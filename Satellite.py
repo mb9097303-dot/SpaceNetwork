@@ -49,15 +49,19 @@ def attempt_transmission(packet):
 
 network = SpaceNetwork(level=3 )
 sat1 = Satellite("Sat1",100)
-sat2 = Satellite("Sat2", 200)
+sat2 = Satellite("Sat2",200)
+sat3 = Satellite("Sat3",300)
+sat4 = Satellite("Sat4",400)
 
 pack = Packet("The situation on the satellite",sat1,sat2)
 
-p_final = Packet("hello from earth!!",sat1,sat2)
-p_earth_to_sat1 = RelayPacket(p_final,earth,sat1)
-attempt_transmission(p_earth_to_sat1)
+p_final = Packet("hello from earth!!",sat3,sat4)
+p_final_1 = RelayPacket(p_final,sat2,sat3)
+p_final_2 = RelayPacket(p_final_1,sat1,sat2)
+p_earth_to_sat1 = RelayPacket(p_final_2,earth,sat1)
+# attempt_transmission(p_earth_to_sat1)
 
 try:
-    attempt_transmission(pack)
+    attempt_transmission(p_earth_to_sat1)
 except BrokenConnectionError:
     print( "Transmission failed")
