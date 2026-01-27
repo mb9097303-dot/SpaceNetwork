@@ -6,11 +6,28 @@ from space_network_lib import *
 class Satellite(SpaceEntity):
     def receive_signal(self, packet: Packet):
         print(f"{self.name} Received: {packet}")
+        if isinstance(packet,RelayPacket):
+            inner_packet = packet.data
+            print(f"Unwrapping and forwarding to {inner_packet.receiver}")
+            attempt_transmission(inner_packet)
+        else:
+            print(f"Final destination reached: {packet.data}")
+
+earth = Satellite("Earth",0)
+
+class RelayPacket(Packet):
+    def __init__(self, packet_to_relay, sender, proxy):
+        super().__init__(packet_to_relay, sender, proxy)
+        self.data = packet_to_relay
+        self.sender = sender
+        self.receiver = proxy
+
+    def __repr__(self):
+        return f"RelayPacket(Relaying [{self.data}] to {self.receiver}from {self.sender})"
 
 
 class BrokenConnectionError(Exception):
     pass
-
 
 def attempt_transmission(packet):
     while True:
@@ -33,7 +50,12 @@ def attempt_transmission(packet):
 network = SpaceNetwork(level=3 )
 sat1 = Satellite("Sat1",100)
 sat2 = Satellite("Sat2", 200)
+
 pack = Packet("The situation on the satellite",sat1,sat2)
+
+p_final = Packet("hello from earth!!",sat1,sat2)
+p_earth_to_sat1 = RelayPacket(p_final,earth,sat1)
+attempt_transmission(p_earth_to_sat1)
 
 try:
     attempt_transmission(pack)
